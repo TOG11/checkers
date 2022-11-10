@@ -322,12 +322,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 705507993}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 380e6afd5edce7c429221834720ff38a, type: 3}
+  m_Script: {fileID: 11500000, guid: 0fec1db3474f6d54b9b402dc1755fc80, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   board: {fileID: 1459916629}
-  checker_prefab: {fileID: 1938101431353312963, guid: 584cd0c768d22fe49bc3c0e34fc30c71, type: 3}
-  next_x: 0
+  checker_prefab: {fileID: 1938101431353312963, guid: bb76fd4ac97eea84da2b5cb663df8452, type: 3}
 --- !u!1 &963194225
 GameObject:
   m_ObjectHideFlags: 0
@@ -463,7 +462,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: c57a82d90bc0fe8488148dcc181bb99b, type: 2}
+  - {fileID: 2100000, guid: 4a295b23749faa14f95fddfad983f6c7, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
