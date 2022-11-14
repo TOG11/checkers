@@ -6,4 +6,4 @@ Packages
 ProjectSettings
 UserSettings
 Temp
-*.meta
+.vs

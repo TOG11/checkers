@@ -4,7 +4,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using CheckerController;
 
 public class Checker : MonoBehaviour
 {
@@ -13,9 +12,17 @@ public class Checker : MonoBehaviour
     public LayerMask board_layer;
     private Vector3 previous_position;
     private Vector3 start_position;
-    public int checker_index;
+
+    public Vector3 checker_current_square;
+    public Vector3 checker_last_square;
+
+    public uint checker_index;
     public bool checker_ovr;
     public bool checker_clicked;
+    //private bool is_king = false; TODO: add king checkers
+
+    public float cell_size;
+    public CheckerController.cell_info[] cell_info = new CheckerController.cell_info[8*8];
 
     private void 
         Start()
@@ -24,9 +31,8 @@ public class Checker : MonoBehaviour
     }
 
     private void
-        OnMouseEnter()
+    OnMouseEnter()
     {
-            previous_position = transform.position;
             checker_ovr = true;
     }
 
@@ -40,6 +46,7 @@ public class Checker : MonoBehaviour
     private void
         Update()
     {
+        //out of bounds
         if (Physics.Raycast(transform.position, new Vector3(0, -25, 0), out var hit, Mathf.Infinity))
         {
             if (hit.collider.tag == "OOB")
@@ -50,6 +57,8 @@ public class Checker : MonoBehaviour
             }
             Debug.DrawLine(transform.position, hit.point, Color.cyan);
         }
+
+        //movement
         if (checker_clicked)
         {
 
@@ -61,7 +70,7 @@ public class Checker : MonoBehaviour
             }
         }
 
-
+        //reset
         if (checker_ovr && Input.GetMouseButtonDown(0))
         {
             if (checker_clicked)
@@ -74,5 +83,14 @@ public class Checker : MonoBehaviour
             checker_clicked = false;
         }
 
+        //check position
+        if (transform.position != previous_position)
+        {
+            if (transform.position.z > previous_position.z + (cell_size * 0.5f))
+            {
+                print("Outside Home Square");
+            }
+        }
+        previous_position = transform.position;
     }
 }
