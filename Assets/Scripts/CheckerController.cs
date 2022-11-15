@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 public class CheckerController : MonoBehaviour
 {
-    public struct cell_info
+    public struct cell_info 
     {
        public Vector3 pos;
        public Vector2 bl, br, tl, tr;

@@ -24,7 +24,7 @@ public class Checker : MonoBehaviour
     public float cell_size;
     public CheckerController.cell_info[] cell_info = new CheckerController.cell_info[8*8];
 
-    private void
+    private void 
         Start()
     {
         start_position = transform.position;
@@ -52,6 +52,7 @@ public class Checker : MonoBehaviour
             if (hit.collider.tag == "OOB")
             {
                 //print("OOB");
+
                 transform.position = start_position;
                 checker_clicked = false;
             }
