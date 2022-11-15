@@ -1,90 +1,67 @@
 /* Copyright (C) 2022 Aiden Desjarlais
  * Copyright (C) 2022 Keir Yurkiw */
 
-using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class CheckerController : MonoBehaviour
 {
-    public struct cell_info
+    public LayerMask oob_layer;
+    public LayerMask board_layer;
+
+    public uint checker_index;
+    public bool checker_ovr;
+    public bool checker_clicked;
+    //private bool is_king = false; TODO: add king checkers
+
+    public float board_cell_size;
+    public BoardController.cell_info[] board_cell_infos;
+
+    private void
+    OnMouseEnter()
     {
-        /* center position of each cell */
-        public Vector3 pos;
-        /* corner positions of each cell */
-        public Vector2 bl, br, tl, tr;
-    };
-
-    private const uint num_cells = 8;
-    private float cell_size;
-    private List<GameObject> living_checkers = new List<GameObject>();
-
-    public GameObject board = null;
-    public GameObject checker_prefab = null;
-    public float checker_y_pos = 0.233f;
-    public cell_info[] cell_infos = new cell_info[num_cells*num_cells];
-
-    public cell_info[]
-    get_board_info()
-    {
-        return cell_infos;
-    }
-
-    private bool
-    is_even(uint i)
-    {
-        return i % 2 == 0;
+        checker_ovr = true;
     }
 
     private void
-    Awake()
+    OnMouseExit()
     {
-        cell_size = board.GetComponent<Renderer>().bounds.size.x / (float)num_cells;
+        checker_ovr = false;
+    }
 
-        Vector3 bottom_left_cell_pos = new Vector3(
-                /* get position of the bottom-left corner of board and add cell
-                 * offset to move to the center of the bottom-left cell */
-                board.GetComponent<Renderer>().bounds.size.x * -0.5f + cell_size * 0.5f,
-                checker_y_pos,
-                board.GetComponent<Renderer>().bounds.size.z * -0.5f + cell_size * 0.5f);
-
-        Vector3 bottom_left_board_coord = new Vector3(
-                board.GetComponent<Renderer>().bounds.size.x * -0.5f,
-                checker_y_pos,
-                board.GetComponent<Renderer>().bounds.size.z * -0.5f);
-
-        for (uint i = 0; i < num_cells; i++)
+    private void
+    Update()
+    {
+        // out of bounds
+        if (Physics.Raycast(transform.position, new Vector3(0, -25, 0), out var hit, Mathf.Infinity))
         {
-            for (uint j = 0; j < num_cells; j++)
+            if (hit.collider.tag == "OOB")
             {
-                uint idx = i*num_cells + j;
+                //print("OOB");
 
-                cell_infos[idx].pos.x = bottom_left_cell_pos.x + cell_size*i;
-                cell_infos[idx].pos.y = bottom_left_cell_pos.y;
-                cell_infos[idx].pos.z = bottom_left_cell_pos.z + cell_size*j;
+                transform.position = board_cell_infos[checker_index].pos;
+                checker_clicked = false;
+            }
+            Debug.DrawLine(transform.position, hit.point, Color.cyan);
+        }
 
-                float x_off = cell_size*j, y_off = cell_size*i;
-                cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
-                cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
-                cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
-                cell_infos[idx].br.y = bottom_left_board_coord.z + y_off;
-                cell_infos[idx].tl.x = bottom_left_board_coord.x + x_off;
-                cell_infos[idx].tl.y = bottom_left_board_coord.z + cell_size + y_off;
-                cell_infos[idx].tr.x = bottom_left_board_coord.x + cell_size + x_off;
-                cell_infos[idx].tr.y = bottom_left_board_coord.z + cell_size + y_off;
+        // movement
+        if (checker_clicked)
+        {
 
-                if (!is_even(i + j) && (j != 3 && j != 4))
-                {
-                    GameObject new_checker = Instantiate(checker_prefab);
-                    new_checker.transform.position = cell_infos[idx].pos;
-                    living_checkers.Add(new_checker);
-                }
+            Vector3 mouse = Input.mousePosition;
+            Ray castPoint = Camera.main.ScreenPointToRay(mouse);
+            if (Physics.Raycast(castPoint, out var _hit, Mathf.Infinity, board_layer))
+            {
+                gameObject.transform.position = new Vector3(_hit.point.x, transform.position.y, _hit.point.z - 0.3f);
             }
         }
 
-        foreach (var c in living_checkers)
-        {
-            c.GetComponent<Checker>().cell_info = cell_infos;
-            c.GetComponent<Checker>().cell_size = cell_size;
-        }
+        // reset
+        if (checker_ovr && Input.GetMouseButtonDown(0))
+            checker_clicked = !checker_clicked;
+        else if (Input.GetMouseButtonDown(0))
+            checker_clicked = false;
     }
 }
