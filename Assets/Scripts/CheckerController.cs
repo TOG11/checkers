@@ -46,8 +46,6 @@ public class CheckerController : MonoBehaviour
                 board.GetComponent<Renderer>().bounds.size.z * -0.5f + cell_size * 0.5f);
 
         Vector3 bottom_left_board_coord = new Vector3(
-         /* get position of the bottom-left corner of board and add cell
-          * offset to move to the center of the bottom-left cell */
                 board.GetComponent<Renderer>().bounds.size.x * -0.5f,
                 checker_y_pos,
                 board.GetComponent<Renderer>().bounds.size.z * -0.5f);
@@ -62,15 +60,15 @@ public class CheckerController : MonoBehaviour
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
                 cell_infos[idx].pos.z = bottom_left_cell_pos.z + cell_size*j;
 
-                /* TODO: fix this */
-                cell_infos[idx].bl.x = bottom_left_board_coord.x;
-                cell_infos[idx].bl.y = bottom_left_board_coord.z;
-                cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size;
-                cell_infos[idx].br.y = bottom_left_board_coord.y;
-                cell_infos[idx].tl.x = bottom_left_board_coord.x;
-                cell_infos[idx].tl.y = bottom_left_board_coord.y + cell_size;
-                cell_infos[idx].tr.x = bottom_left_board_coord.x + cell_size;
-                cell_infos[idx].tr.y = bottom_left_board_coord.y + cell_size;
+                float x_off = cell_size*j, y_off = cell_size*i;
+                cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
+                cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
+                cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
+                cell_infos[idx].br.y = bottom_left_board_coord.z + y_off;
+                cell_infos[idx].tl.x = bottom_left_board_coord.x + x_off;
+                cell_infos[idx].tl.y = bottom_left_board_coord.z + cell_size + y_off;
+                cell_infos[idx].tr.x = bottom_left_board_coord.x + cell_size + x_off;
+                cell_infos[idx].tr.y = bottom_left_board_coord.z + cell_size + y_off;
 
                 if (!is_even(i + j) && (j != 3 && j != 4))
                 {

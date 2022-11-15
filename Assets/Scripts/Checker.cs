@@ -51,7 +51,8 @@ public class Checker : MonoBehaviour
         {
             if (hit.collider.tag == "OOB")
             {
-                print("OOB");
+                //print("OOB");
+
                 transform.position = start_position;
                 checker_clicked = false;
             }
