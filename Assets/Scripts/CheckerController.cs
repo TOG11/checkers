@@ -6,19 +6,28 @@ using System.Collections.Generic;
 
 public class CheckerController : MonoBehaviour
 {
-    public struct cell_info 
+    public struct cell_info
     {
-       public Vector3 pos;
-       public Vector2 bl, br, tl, tr;
+        /* center position of each cell */
+        public Vector3 pos;
+        /* corner positions of each cell */
+        public Vector2 bl, br, tl, tr;
     };
+
+    private const uint num_cells = 8;
+    private float cell_size;
+    private List<GameObject> living_checkers = new List<GameObject>();
 
     public GameObject board = null;
     public GameObject checker_prefab = null;
     public float checker_y_pos = 0.233f;
-    private List<GameObject> living_checkers = new List<GameObject>();
-    public cell_info[] cell_infos = new cell_info[8 * 8];
+    public cell_info[] cell_infos = new cell_info[num_cells*num_cells];
 
-    private float cell_size;
+    public cell_info[]
+    get_board_info()
+    {
+        return cell_infos;
+    }
 
     private bool
     is_even(uint i)
@@ -26,16 +35,9 @@ public class CheckerController : MonoBehaviour
         return i % 2 == 0;
     }
 
-    public cell_info
-    get_cell_info(uint x, uint y)
-    {
-        return cell_infos[x*8 + y];
-    }
-
     private void
     Awake()
     {
-        const uint num_cells = 8;
         cell_size = board.GetComponent<Renderer>().bounds.size.x / (float)num_cells;
 
         Vector3 bottom_left_cell_pos = new Vector3(
