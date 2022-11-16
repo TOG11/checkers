@@ -12,9 +12,8 @@ GameObject:
   - component: {fileID: 1938101431353312975}
   - component: {fileID: 1938101431353312974}
   - component: {fileID: 1938101431353312961}
-  - component: {fileID: 1938101431353312960}
   m_Layer: 0
-  m_Name: Checker
+  m_Name: Player checker
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -99,27 +98,3 @@ CapsuleCollider:
   m_Height: 2
   m_Direction: 1
   m_Center: {x: 0.000000059604645, y: 0, z: -0.00000008940697}
---- !u!114 &1938101431353312960
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1938101431353312963}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 618de3c3ad03314478d3cf8aa51233a6, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  oob_layer:
-    serializedVersion: 2
-    m_Bits: 72
-  board_layer:
-    serializedVersion: 2
-    m_Bits: 64
-  checker_current_square: {x: 0, y: 0, z: 0}
-  checker_last_square: {x: 0, y: 0, z: 0}
-  checker_index: 0
-  checker_ovr: 0
-  checker_clicked: 0
-  cell_size: 0
