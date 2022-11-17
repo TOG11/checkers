@@ -4,6 +4,55 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+public class checker
+{
+    private GameObject obj = null;
+    public int pos_index = -1, list_index = -1;
+
+    public
+    checker(GameObject go, int in_index, int in_list_index)
+    {
+        obj = go;
+        pos_index = in_index;
+        list_index = in_list_index;
+    }
+
+    public bool
+    move(int idx)
+    {
+        if (BoardController.cell_infos[idx].populated) {
+            Debug.Log("Cell " + idx + " populated");
+            return false;
+        }
+
+        obj.transform.position = BoardController.cell_infos[idx].pos;
+        BoardController.cell_infos[idx].populated = true;
+
+        BoardController.cell_infos[pos_index].populated = false;
+        pos_index = idx;
+
+        return true;
+    }
+    public bool
+    move(int x, int y)
+    {
+        return move(x*8 + y);
+    }
+
+    public void
+    kill()
+    {
+        MonoBehaviour.Destroy(obj);
+
+        BoardController.cell_infos[pos_index].populated = false;
+        BoardController.checkers.RemoveAt(list_index);
+
+        /* update list index for other checkers */
+        for (var i = list_index; i < BoardController.checkers.Count; i++)
+            BoardController.checkers[i].list_index = i;
+    }
+}
+
 public class BoardController : MonoBehaviour
 {
     public struct cell_info
@@ -19,15 +68,14 @@ public class BoardController : MonoBehaviour
 
     private const int num_cells = 8;
 
-    private cell_info[] cell_infos = new cell_info[num_cells*num_cells];
-    private List<GameObject> checkers = new List<GameObject>();
-
+    public static cell_info[] cell_infos = new cell_info[num_cells*num_cells];
+    public static List<checker> checkers = new List<checker>();
     public GameObject player_checker = null;
     public GameObject enemy_checker = null;
     public float checker_y_pos = 0.15f;
 
-    private bool
-    is_even(uint i)
+    public static bool
+    is_even(int i)
     {
         return i % 2 == 0;
     }
@@ -50,11 +98,11 @@ public class BoardController : MonoBehaviour
                 checker_y_pos,
                 GetComponent<Renderer>().bounds.size.z * -0.5f);
 
-        for (uint i = 0; i < num_cells; i++)
+        for (var i = 0; i < num_cells; i++)
         {
-            for (uint j = 0; j < num_cells; j++)
+            for (var j = 0; j < num_cells; j++)
             {
-                uint idx = i*num_cells + j;
+                int idx = i*num_cells + j;
 
                 cell_infos[idx].pos.z = bottom_left_cell_pos.x + cell_size*i;
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
@@ -72,7 +120,9 @@ public class BoardController : MonoBehaviour
 
                 if (!is_even(i + j) && (i != 3 && i != 4))
                 {
-                    GameObject c = Instantiate(i < 3 ? player_checker : enemy_checker, cell_infos[idx].pos, Quaternion.identity);
+                    GameObject game_obj = Instantiate(i < 3 ? player_checker : enemy_checker,
+                            cell_infos[idx].pos, Quaternion.identity);
+                    checker c = new checker(game_obj, idx, checkers.Count);
                     checkers.Add(c);
 
                     cell_infos[idx].populated = true;
@@ -81,44 +131,16 @@ public class BoardController : MonoBehaviour
         }
     }
 
-    private GameObject
-    find_checker(int idx)
-    {
-        for (var i = 0; i < checkers.Count; i++)
-            if (checkers[i].transform.position == cell_infos[idx].pos)
-                return checkers[i];
-
-        return null;
-    }
-
-    private GameObject
-    find_checker(int x, int y)
-    {
-        return find_checker(x*num_cells + y);
-    }
-
-    private bool
-    move_checker(GameObject c, int idx)
-    {
-        if (!c || cell_infos[idx].populated)
-            return false;
-
-        c.transform.position = cell_infos[idx].pos;
-        return true;
-    }
-
-    private bool
-    move_checker(GameObject c, int x, int y)
-    {
-        return move_checker(c, x*num_cells + y);
-    }
-
     private void
     Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
-            print(move_checker(find_checker(0, 1), 0, 0));
-        if (Input.GetKeyUp(KeyCode.Return))
-            print(move_checker(find_checker(0, 0), 0, 1));
+            checkers[8].move(2, 3);
+            //checkers[8].move(26);
+        else if (Input.GetKeyUp(KeyCode.Space))
+            checkers[8].move(17);
+
+        if (Input.GetKeyDown(KeyCode.Backspace))
+            checkers[0].kill();
     }
 }
