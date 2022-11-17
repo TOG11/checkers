@@ -17,20 +17,14 @@ public class BoardController : MonoBehaviour
         public bool populated;
     }
 
-    public struct checker
-    {
-        public GameObject obj;
-        public uint index;
-    }
-
     private const uint num_cells = 8;
 
     private cell_info[] cell_infos = new cell_info[num_cells*num_cells];
-    private List<checker> checkers = new List<checker>();
+    private List<GameObject> checkers = new List<GameObject>();
 
     public GameObject player_checker = null;
     public GameObject enemy_checker = null;
-    public float checker_y_pos = 0.233f;
+    public float checker_y_pos = 0.15f;
 
     private bool
     is_even(uint i)
@@ -66,7 +60,7 @@ public class BoardController : MonoBehaviour
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
                 cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size*j;
 
-                float x_off = cell_size*i, y_off = cell_size*j;
+                float x_off = cell_size*j, y_off = cell_size*i;
                 cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
                 cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
                 cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
@@ -78,15 +72,7 @@ public class BoardController : MonoBehaviour
 
                 if (!is_even(i + j) && (i != 3 && i != 4))
                 {
-                    checker c = new checker() { obj = null, index = 0 };
-
-                    if (i < 3)
-                        c.obj = Instantiate(player_checker);
-                    else if (i > 4)
-                        c.obj = Instantiate(enemy_checker);
-
-                    c.obj.transform.position = cell_infos[idx].pos;
-                    c.index = idx;
+                    GameObject c = Instantiate(i < 3 ? player_checker : enemy_checker, cell_infos[idx].pos, Quaternion.identity);
                     checkers.Add(c);
 
                     cell_infos[idx].populated = true;
@@ -95,43 +81,42 @@ public class BoardController : MonoBehaviour
         }
     }
 
-    private uint
-    get_checker_index(uint x, uint y)
+    private GameObject
+    find_checker(int idx)
     {
-        return x*num_cells + y;
-    }
+        for (var i = 0; i < checkers.Count; i++)
+            if (checkers[i].transform.position == cell_infos[idx].pos)
+                return checkers[i];
 
-    private int
-    find_checker_on_board(uint idx)
-    {
-        for (int i = 0; i < checkers.Count; i++)
-            if (checkers[i].index == idx)
-                return i;
-
-        return -1;
+        return null;
     }
 
     private bool
-    kill_checker(uint idx)
+    move_checker(GameObject c, int idx)
     {
-        if (!cell_infos[idx].populated)
+        if (!c)
             return false;
 
-        int index = find_checker_on_board(idx);
-        if (index < 0)
-            return false;
-
-        Destroy(checkers[index].obj);
-        checkers.RemoveAt(index);
+        c.transform.position = cell_infos[idx].pos;
         return true;
+    }
+
+    private void
+    select_checker()
+    {
+        RaycastHit hit = new RaycastHit();
+        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit) && Input.GetMouseButton(0))
+            hit.transform.gameObject.transform.position = new Vector3(hit.point.x, checker_y_pos, hit.point.z + 0.3f);
     }
 
     private void
     Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
-            print(kill_checker(8));
-        if (Input.GetKeyDown(KeyCode.Return))
-            Instantiate(player_checker).transform.position = cell_infos[1].pos;
+            move_checker(find_checker(1), 0);
+        if (Input.GetKeyUp(KeyCode.Space))
+            move_checker(find_checker(0), 1);
+
+        select_checker();
     }
 }
