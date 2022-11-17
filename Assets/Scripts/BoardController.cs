@@ -17,7 +17,7 @@ public class BoardController : MonoBehaviour
         public bool populated;
     }
 
-    private const uint num_cells = 8;
+    private const int num_cells = 8;
 
     private cell_info[] cell_infos = new cell_info[num_cells*num_cells];
     private List<GameObject> checkers = new List<GameObject>();
@@ -91,32 +91,34 @@ public class BoardController : MonoBehaviour
         return null;
     }
 
+    private GameObject
+    find_checker(int x, int y)
+    {
+        return find_checker(x*num_cells + y);
+    }
+
     private bool
     move_checker(GameObject c, int idx)
     {
-        if (!c)
+        if (!c || cell_infos[idx].populated)
             return false;
 
         c.transform.position = cell_infos[idx].pos;
         return true;
     }
 
-    private void
-    select_checker()
+    private bool
+    move_checker(GameObject c, int x, int y)
     {
-        RaycastHit hit = new RaycastHit();
-        if (Physics.Raycast(Camera.main.ScreenPointToRay(Input.mousePosition), out hit) && Input.GetMouseButton(0))
-            hit.transform.gameObject.transform.position = new Vector3(hit.point.x, checker_y_pos, hit.point.z + 0.3f);
+        return move_checker(c, x*num_cells + y);
     }
 
     private void
     Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
-            move_checker(find_checker(1), 0);
-        if (Input.GetKeyUp(KeyCode.Space))
-            move_checker(find_checker(0), 1);
-
-        select_checker();
+            print(move_checker(find_checker(0, 1), 0, 0));
+        if (Input.GetKeyUp(KeyCode.Return))
+            print(move_checker(find_checker(0, 0), 0, 1));
     }
 }
