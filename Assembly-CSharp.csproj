@@ -60,10 +60,8 @@
     <Compile Include="Assets\Mirror\Transports\Latency\LatencySimulation.cs" />
     <Compile Include="Assets\Mirror\Transports\Telepathy\TelepathyTransport.cs" />
     <Compile Include="Assets\ParrelSync\Examples\CustomArgumentExample.cs" />
-    <Compile Include="Assets\Scripts\test.cs" />
-    <Compile Include="Assets\Scripts\CheckerController.cs" />
+    <Compile Include="Assets\Scripts\BoardController.cs" />
     <Compile Include="Assets\Scripts\UIManager.cs" />
-    <Compile Include="Assets\Scripts\Checker.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\Mirror\Plugins\Mono.Cecil\Mono.CecilX.dll" />

@@ -4,8 +4,10 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
 public class BoardController : MonoBehaviour
 {
+
     public struct cell_info
     {
         /* center position of each cell */
@@ -19,12 +21,22 @@ public class BoardController : MonoBehaviour
 
     private const int num_cells = 8;
 
-    private cell_info[] cell_infos = new cell_info[num_cells*num_cells];
+    private cell_info[] cell_infos = new cell_info[num_cells * num_cells];
     private List<GameObject> checkers = new List<GameObject>();
 
     public GameObject player_checker = null;
     public GameObject enemy_checker = null;
     public float checker_y_pos = 0.15f;
+
+    public Camera main_camera;
+    private Ray mouse_ray;
+    public Material original_checker_material;
+    public Material flashing_checker_material;
+
+    private bool checker_select;
+    public bool checker_selected;
+    private bool checker_glow_negative_positive;
+    private GameObject selected_checker;
 
     private bool
     is_even(uint i)
@@ -54,13 +66,13 @@ public class BoardController : MonoBehaviour
         {
             for (uint j = 0; j < num_cells; j++)
             {
-                uint idx = i*num_cells + j;
+                uint idx = i * num_cells + j;
 
-                cell_infos[idx].pos.z = bottom_left_cell_pos.x + cell_size*i;
+                cell_infos[idx].pos.z = bottom_left_cell_pos.x + cell_size * i;
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
-                cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size*j;
+                cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size * j;
 
-                float x_off = cell_size*j, y_off = cell_size*i;
+                float x_off = cell_size * j, y_off = cell_size * i;
                 cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
                 cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
                 cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
@@ -94,7 +106,7 @@ public class BoardController : MonoBehaviour
     private GameObject
     find_checker(int x, int y)
     {
-        return find_checker(x*num_cells + y);
+        return find_checker(x * num_cells + y);
     }
 
     private bool
@@ -110,15 +122,81 @@ public class BoardController : MonoBehaviour
     private bool
     move_checker(GameObject c, int x, int y)
     {
-        return move_checker(c, x*num_cells + y);
+        return move_checker(c, x * num_cells + y);
     }
 
     private void
     Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
-            print(move_checker(find_checker(0, 1), 0, 0));
-        if (Input.GetKeyUp(KeyCode.Return))
-            print(move_checker(find_checker(0, 0), 0, 1));
+      // if (Input.GetKeyDown(KeyCode.Space))
+      //     print(move_checker(find_checker(0, 1), 0, 0));
+      //  if (Input.GetKeyUp(KeyCode.Return))
+      //      print(move_checker(find_checker(0, 0), 0, 1));
+
+
+
+        mouse_ray = main_camera.ScreenPointToRay(Input.mousePosition);
+
+
+
+        if (Input.GetMouseButtonDown(0))
+        {
+
+            if (Physics.Raycast(mouse_ray, out RaycastHit hit))
+            {
+                if (!checker_selected)
+                {
+                    foreach (var c in checkers)
+                    {
+                        if (c.gameObject.tag == "PlayerChecker")
+                        {
+                            c.GetComponent<MeshRenderer>().material = original_checker_material;
+                        }
+                    }
+                    if (hit.transform.gameObject.tag == "PlayerChecker")
+                    {
+                        checker_select = !checker_select;
+                        checker_select = true;
+                        if (checker_select)
+                        {
+                            selected_checker = hit.transform.gameObject;
+                            checker_selected = true;
+                            hit.transform.gameObject.GetComponent<MeshRenderer>().material = flashing_checker_material;
+                        }
+                        else
+                        {
+                            selected_checker = null;
+                            checker_selected = false;
+                            hit.transform.gameObject.GetComponent<MeshRenderer>().material = original_checker_material;
+                        }
+                    }
+
+                    if (checker_select && hit.transform.gameObject.tag != "PlayerChecker")
+                        foreach (var c in checkers)
+                        {
+                            if (c.gameObject.tag == "PlayerChecker")
+                            {
+                                c.GetComponent<MeshRenderer>().material = original_checker_material;
+                            }
+                        }
+                } else if (checker_selected)
+                {
+                    selected_checker.transform.position = hit.transform.position;
+                }
+            }
+        }
+
+        if (flashing_checker_material.GetFloat("_Metallic") <= 0)
+            checker_glow_negative_positive = true;
+        if (flashing_checker_material.GetFloat("_Metallic") >= 1)
+            checker_glow_negative_positive = false;
+
+
+        float current_metallic = flashing_checker_material.GetFloat("_Metallic");
+        if (!checker_glow_negative_positive)
+            flashing_checker_material.SetFloat("_Metallic", current_metallic - Time.deltaTime * 5);
+        if (checker_glow_negative_positive)
+            flashing_checker_material.SetFloat("_Metallic", current_metallic + Time.deltaTime * 5);
+
     }
 }
