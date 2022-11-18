@@ -140,8 +140,8 @@ public class BoardController : MonoBehaviour
     {
         var idx = (x == 0 || y == 0) ? x*8 + y : x + y*8;
         for (var i = 0; i < checkers.Count; i++)
-        if (checkers[i].pos_index == idx)
-        return checkers[i];
+            if (checkers[i].pos_index == idx)
+                return checkers[i];
 
         return null;
     }
