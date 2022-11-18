@@ -72,12 +72,13 @@ public class BoardController : MonoBehaviour
     public GameObject enemy_checker = null;
     public float checker_y_pos = 0.15f;
 
-    public Material original_checker_material;
-    public Material flashing_checker_material;
+    public Material original_checker_material = null;
+    public Material flashing_checker_material = null;
 
-    private bool checker_select;
-    private bool checker_selected;
-    private GameObject selected_checker;
+    private Camera main_camera = null;
+    private bool checker_select = false;
+    private bool checker_selected = false;
+    private GameObject selected_checker = null;
 
     public static bool
     is_even(int i)
@@ -89,6 +90,8 @@ public class BoardController : MonoBehaviour
     private void
     Awake()
     {
+        main_camera = Camera.main;
+
         float cell_size = GetComponent<Collider>().bounds.size.x / 8.0f;
 
         Vector3 bottom_left_cell_pos = new Vector3(
@@ -149,7 +152,7 @@ public class BoardController : MonoBehaviour
     private void
     Update()
     {
-        Ray mouse_ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray mouse_ray = main_camera.ScreenPointToRay(Input.mousePosition);
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -191,6 +194,6 @@ public class BoardController : MonoBehaviour
             }
         }
 
-        flashing_checker_material.SetFloat("_Metallic", (float)Math.Sin(Time.unscaledTime * 7.5f));
+        flashing_checker_material.SetFloat("_Metallic", (float)Math.Cos(Time.unscaledTime * 7.5f) * 0.35f);
     }
 }
