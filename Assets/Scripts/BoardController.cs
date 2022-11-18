@@ -10,9 +10,9 @@ public class checker
     public int pos_index = -1, list_index = -1;
 
     public
-    checker(GameObject go, int in_index, int in_list_index)
+    checker(GameObject prefab, int in_index, int in_list_index)
     {
-        obj = go;
+        obj = MonoBehaviour.Instantiate(prefab, BoardController.cell_infos[in_index].pos, Quaternion.identity);
         pos_index = in_index;
         list_index = in_list_index;
     }
@@ -20,10 +20,8 @@ public class checker
     public bool
     move(int idx)
     {
-        if (BoardController.cell_infos[idx].populated) {
-            Debug.Log("Cell " + idx + " populated");
+        if (BoardController.cell_infos[idx].populated)
             return false;
-        }
 
         obj.transform.position = BoardController.cell_infos[idx].pos;
         BoardController.cell_infos[idx].populated = true;
@@ -36,7 +34,7 @@ public class checker
     public bool
     move(int x, int y)
     {
-        return move(x*8 + y);
+        return move(x + y*8);
     }
 
     public void
@@ -120,9 +118,7 @@ public class BoardController : MonoBehaviour
 
                 if (!is_even(i + j) && (i != 3 && i != 4))
                 {
-                    GameObject game_obj = Instantiate(i < 3 ? player_checker : enemy_checker,
-                            cell_infos[idx].pos, Quaternion.identity);
-                    checker c = new checker(game_obj, idx, checkers.Count);
+                    checker c = new checker(i < 3 ? player_checker : enemy_checker, idx, checkers.Count);
                     checkers.Add(c);
 
                     cell_infos[idx].populated = true;
@@ -136,9 +132,8 @@ public class BoardController : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
             checkers[8].move(2, 3);
-            //checkers[8].move(26);
         else if (Input.GetKeyUp(KeyCode.Space))
-            checkers[8].move(17);
+            checkers[8].move(0, 0);
 
         if (Input.GetKeyDown(KeyCode.Backspace))
             checkers[0].kill();
