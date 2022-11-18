@@ -36,7 +36,8 @@ public class checker
     public bool
     move(int x, int y)
     {
-        return move(x + y*8);
+        var idx = (x == 0 || y == 0) ? x*8 + y : x + y*8;
+        return move(idx);
     }
 
     public void
@@ -132,8 +133,9 @@ public class BoardController : MonoBehaviour
     private checker
     get_checker(int x, int y)
     {
+        var idx = (x == 0 || y == 0) ? x*8 + y : x + y*8;
         for (var i = 0; i < checkers.Count; i++)
-            if (checkers[i].pos_index == x + y*8)
+            if (checkers[i].pos_index == idx)
                 return checkers[i];
 
         return null;
@@ -148,6 +150,6 @@ public class BoardController : MonoBehaviour
             get_checker(2, 3).move(1, 2);
 
         if (Input.GetKeyDown(KeyCode.Backspace))
-            checkers[0].kill();
+            get_checker(1, 0).kill();
     }
 }
