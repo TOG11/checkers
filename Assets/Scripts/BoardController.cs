@@ -36,8 +36,22 @@ public class checker
     public bool
     move(int x, int y)
     {
-        var idx = (x == 0 || y == 0) ? x*8 + y : x + y*8;
+        var idx = (x == 0 || y == 0) ? x * 8 + y : x + y * 8;
         return move(idx);
+    }
+
+    public bool
+    move(Vector3 vec)
+    {
+        Vector3 vec3 = new Vector3(vec.x, BoardController.checker_y_pos, vec.z);
+        for (int i = 0; i<64; i++)
+        {
+            if (vec3 == BoardController.cell_infos[i].pos)
+            {
+                return move(i);
+            }
+        }
+        return false;
     }
 
     public void
@@ -56,7 +70,8 @@ public class checker
 
 public class BoardController : MonoBehaviour
 {
-    public struct cell_info    {
+    public struct cell_info
+    {
         /* center position of each cell  */
         public Vector3 pos;
         /* corner positions of each cell  */
@@ -66,19 +81,18 @@ public class BoardController : MonoBehaviour
         public bool populated;
     }
 
-    public static cell_info[] cell_infos = new cell_info[8*8];
+    public static cell_info[] cell_infos = new cell_info[8 * 8];
     public static List<checker> checkers = new List<checker>();
     public GameObject player_checker = null;
     public GameObject enemy_checker = null;
-    public float checker_y_pos = 0.15f;
+    public static float checker_y_pos = 0.15f;
 
     public Material original_checker_material = null;
     public Material flashing_checker_material = null;
 
     private Camera main_camera = null;
-    private bool checker_select = false;
-    private bool checker_selected = false;
-    private GameObject selected_checker = null;
+    private bool checker_selected;
+    private checker selected_checker;
 
     public static bool
     is_even(int i)
@@ -110,13 +124,13 @@ public class BoardController : MonoBehaviour
         {
             for (var j = 0; j < 8; j++)
             {
-                int idx = i*8 + j;
+                int idx = i * 8 + j;
 
-                cell_infos[idx].pos.z = bottom_left_cell_pos.x + cell_size*i;
+                cell_infos[idx].pos.z = bottom_left_cell_pos.x + cell_size * i;
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
-                cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size*j;
+                cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size * j;
 
-                float x_off = cell_size*j, y_off = cell_size*i;
+                float x_off = cell_size * j, y_off = cell_size * i;
                 cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
                 cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
                 cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
@@ -141,7 +155,7 @@ public class BoardController : MonoBehaviour
     private checker
     get_checker(int x, int y)
     {
-        var idx = (x == 0 || y == 0) ? x*8 + y : x + y*8;
+        var idx = (x == 0 || y == 0) ? x * 8 + y : x + y * 8;
         for (var i = 0; i < checkers.Count; i++)
             if (checkers[i].pos_index == idx)
                 return checkers[i];
@@ -158,42 +172,47 @@ public class BoardController : MonoBehaviour
         {
             if (Physics.Raycast(mouse_ray, out RaycastHit hit))
             {
-                if (!checker_selected)
+                if (hit.transform.gameObject.tag == "PlayerChecker")
+                    checker_selected = true;
+                else
+                    checker_selected = false;
+
+                if (checker_selected)
                 {
                     foreach (var c in checkers)
                         if (c.obj.gameObject.tag == "PlayerChecker")
                             c.obj.GetComponent<MeshRenderer>().material = original_checker_material;
 
+
                     if (hit.transform.gameObject.tag == "PlayerChecker")
                     {
-                        checker_select = !checker_select;
-                        checker_select = true;
-                        if (checker_select)
+                        hit.transform.gameObject.GetComponent<MeshRenderer>().material = flashing_checker_material;
+                        foreach (var c in checkers)
                         {
-                            selected_checker = hit.transform.gameObject;
-                            checker_selected = true;
-                            hit.transform.gameObject.GetComponent<MeshRenderer>().material = flashing_checker_material;
-                        }
-                        else
-                        {
-                            selected_checker = null;
-                            checker_selected = false;
-                            hit.transform.gameObject.GetComponent<MeshRenderer>().material = original_checker_material;
+                            if (c.obj == hit.transform.gameObject)
+                            {
+                                selected_checker = c;
+                                break;
+                            }
                         }
                     }
-
-                    if (checker_select && hit.transform.gameObject.tag != "PlayerChecker")
+                    else if (hit.transform.gameObject.tag == "EnemyChecker" && selected_checker != null)
+                    {
+                        selected_checker = null;
+                        selected_checker.move(hit.transform.position);
                         foreach (var c in checkers)
-                            if (c.obj.gameObject.tag == "PlayerChecker")
-                                c.obj.GetComponent<MeshRenderer>().material = original_checker_material;
-                }
-                else
-                {
-                    selected_checker.transform.position = new Vector3(hit.transform.position.x, checker_y_pos, hit.transform.position.z);
+                        {
+                            if (c.obj == hit.transform.gameObject)
+                            {
+                                c.kill();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
-        }
 
-        flashing_checker_material.SetFloat("_Metallic", (float)Math.Sin(Time.unscaledTime * 7.5f) * 0.35f);
+            flashing_checker_material.SetFloat("_Metallic", (float)Math.Sin(Time.unscaledTime * 7.5f) * 0.35f);
+        }
     }
 }
