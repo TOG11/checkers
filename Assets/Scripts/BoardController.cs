@@ -187,13 +187,13 @@ public class BoardController : MonoBehaviour
                             if (c.obj.gameObject.tag == "PlayerChecker")
                                 c.obj.GetComponent<MeshRenderer>().material = original_checker_material;
                 }
-                else if (checker_selected)
+                else
                 {
-                    selected_checker.transform.position = hit.transform.position;
+                    selected_checker.transform.position = new Vector3(hit.transform.position.x, checker_y_pos, hit.transform.position.z);
                 }
             }
         }
 
-        flashing_checker_material.SetFloat("_Metallic", (float)Math.Cos(Time.unscaledTime * 7.5f) * 0.35f);
+        flashing_checker_material.SetFloat("_Metallic", (float)Math.Sin(Time.unscaledTime * 7.5f) * 0.35f);
     }
 }
