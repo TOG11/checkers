@@ -57,13 +57,13 @@ public class checker
 public class BoardController : MonoBehaviour
 {
     public struct cell_info    {
-    /* center position of each cell  */
-    public Vector3 pos;
-    /* corner positions of each cell  */
-    public Vector2 bl, br, tl, tr;
+        /* center position of each cell  */
+        public Vector3 pos;
+        /* corner positions of each cell  */
+        public Vector2 bl, br, tl, tr;
 
-    /* there is a checker in the cell  */
-    public bool populated;
+        /* there is a checker in the cell  */
+        public bool populated;
     }
 
     public static cell_info[] cell_infos = new cell_info[8*8];
