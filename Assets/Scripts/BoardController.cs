@@ -72,13 +72,11 @@ public class BoardController : MonoBehaviour
     public GameObject enemy_checker = null;
     public float checker_y_pos = 0.15f;
 
-    public Camera main_camera;
-    private Ray mouse_ray;
     public Material original_checker_material;
     public Material flashing_checker_material;
 
     private bool checker_select;
-    public bool checker_selected;
+    private bool checker_selected;
     private GameObject selected_checker;
 
     public static bool
@@ -91,19 +89,19 @@ public class BoardController : MonoBehaviour
     private void
     Awake()
     {
-        float cell_size = GetComponent<Renderer>().bounds.size.x / 8.0f;
+        float cell_size = GetComponent<Collider>().bounds.size.x / 8.0f;
 
         Vector3 bottom_left_cell_pos = new Vector3(
                 /* get position of the bottom-left corner of board and add cell
                  * offset to move to the center of the bottom-left cell */
-                GetComponent<Renderer>().bounds.size.x * -0.5f + cell_size * 0.5f,
+                GetComponent<Collider>().bounds.size.x * -0.5f + cell_size * 0.5f,
                 checker_y_pos,
-                GetComponent<Renderer>().bounds.size.z * -0.5f + cell_size * 0.5f);
+                GetComponent<Collider>().bounds.size.z * -0.5f + cell_size * 0.5f);
 
         Vector3 bottom_left_board_coord = new Vector3(
-                GetComponent<Renderer>().bounds.size.x * -0.5f,
+                GetComponent<Collider>().bounds.size.x * -0.5f,
                 checker_y_pos,
-                GetComponent<Renderer>().bounds.size.z * -0.5f);
+                GetComponent<Collider>().bounds.size.z * -0.5f);
 
         for (var i = 0; i < 8; i++)
         {
@@ -125,6 +123,7 @@ public class BoardController : MonoBehaviour
                 cell_infos[idx].tr.x = bottom_left_board_coord.x + cell_size + x_off;
                 cell_infos[idx].tr.y = bottom_left_board_coord.z + cell_size + y_off;
 
+                /* instantiate checkers */
                 if (!is_even(i + j) && (i != 3 && i != 4))
                 {
                     checker c = new checker(i < 3 ? player_checker : enemy_checker, idx, checkers.Count);
@@ -150,7 +149,7 @@ public class BoardController : MonoBehaviour
     private void
     Update()
     {
-        mouse_ray = main_camera.ScreenPointToRay(Input.mousePosition);
+        Ray mouse_ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
         if (Input.GetMouseButtonDown(0))
         {
