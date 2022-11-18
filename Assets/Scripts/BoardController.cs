@@ -7,7 +7,9 @@ using System.Collections.Generic;
 public class checker
 {
     private GameObject obj = null;
-    public int pos_index = -1, list_index = -1;
+    private int list_index = -1;
+
+    public int pos_index = -1;
 
     public
     checker(GameObject prefab, int in_index, int in_list_index)
@@ -127,13 +129,23 @@ public class BoardController : MonoBehaviour
         }
     }
 
+    private checker
+    get_checker(int x, int y)
+    {
+        for (var i = 0; i < checkers.Count; i++)
+            if (checkers[i].pos_index == x + y*8)
+                return checkers[i];
+
+        return null;
+    }
+
     private void
     Update()
     {
         if (Input.GetKeyDown(KeyCode.Space))
-            checkers[8].move(2, 3);
+            get_checker(1, 2).move(2, 3);
         else if (Input.GetKeyUp(KeyCode.Space))
-            checkers[8].move(0, 0);
+            get_checker(2, 3).move(1, 2);
 
         if (Input.GetKeyDown(KeyCode.Backspace))
             checkers[0].kill();
