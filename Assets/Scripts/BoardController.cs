@@ -9,25 +9,52 @@ public class checker
 {
     public GameObject obj = null;
     public int list_index = -1, pos_index = -1;
+    private bool is_king = false;
 
     public
     checker(GameObject prefab, int in_index, int in_list_index)
     {
-        obj = MonoBehaviour.Instantiate(prefab, BoardController.cell_infos[in_index].pos, Quaternion.identity);
+        obj = MonoBehaviour.Instantiate(prefab, BoardController.singleton.cell_infos[in_index].pos, Quaternion.identity);
         pos_index = in_index;
         list_index = in_list_index;
     }
 
     public bool
-    move(int idx)
+    check_move_validity(Vector3 hit)
     {
-        if (BoardController.cell_infos[idx].populated)
+        Vector3 square_left = BoardController.singleton.cell_infos[pos_index + 8 - 1].pos;
+        Vector3 square_right = BoardController.singleton.cell_infos[pos_index + 8 + 1].pos;
+
+        if (hit == square_left)
+        {
+            obj.transform.position = square_left;
+        }
+        else if (hit == square_right)
+        {
+            obj.transform.position = square_right;
+        }
+        else
             return false;
 
-        obj.transform.position = BoardController.cell_infos[idx].pos;
-        BoardController.cell_infos[idx].populated = true;
+        return true;
+    }
 
-        BoardController.cell_infos[pos_index].populated = false;
+
+    public bool
+    move(int idx)
+    {
+        if (BoardController.singleton.cell_infos[idx].populated || !BoardController.singleton.cell_infos[idx].is_black)
+        {
+            foreach (var c in BoardController.singleton.checkers)
+                if (c.obj.gameObject.tag == "PlayerChecker")
+                    c.obj.GetComponent<MeshRenderer>().material = BoardController.singleton.original_checker_material;
+
+            return false;
+        }
+
+        BoardController.singleton.cell_infos[idx].populated = true;
+
+        BoardController.singleton.cell_infos[pos_index].populated = false;
         pos_index = idx;
 
         return true;
@@ -43,10 +70,10 @@ public class checker
     public bool
     move(Vector3 vec)
     {
-        Vector3 vec3 = new Vector3(vec.x, BoardController.checker_y_pos, vec.z);
-        for (int i = 0; i<64; i++)
+        Vector3 vec3 = new Vector3(vec.x, BoardController.singleton.checker_y_pos, vec.z);
+        for (int i = 0; i < 64; i++)
         {
-            if (vec3 == BoardController.cell_infos[i].pos)
+            if (vec3 == BoardController.singleton.cell_infos[i].pos)
             {
                 return move(i);
             }
@@ -59,13 +86,14 @@ public class checker
     {
         MonoBehaviour.Destroy(obj);
 
-        BoardController.cell_infos[pos_index].populated = false;
-        BoardController.checkers.RemoveAt(list_index);
+        BoardController.singleton.cell_infos[pos_index].populated = false;
+        BoardController.singleton.checkers.RemoveAt(list_index);
 
         /* update list index for other checkers  */
-        for (var i = list_index; i < BoardController.checkers.Count; i++)
-            BoardController.checkers[i].list_index = i;
+        for (var i = list_index; i < BoardController.singleton.checkers.Count; i++)
+            BoardController.singleton.checkers[i].list_index = i;
     }
+
 }
 
 public class BoardController : MonoBehaviour
@@ -74,22 +102,21 @@ public class BoardController : MonoBehaviour
     {
         /* center position of each cell  */
         public Vector3 pos;
-        /* corner positions of each cell  */
-        public Vector2 bl, br, tl, tr;
-
+        public bool is_black;
         /* there is a checker in the cell  */
         public bool populated;
     }
 
-    public static cell_info[] cell_infos = new cell_info[8 * 8];
-    public static List<checker> checkers = new List<checker>();
+    public cell_info[] cell_infos = new cell_info[8 * 8];
+    public List<checker> checkers = new List<checker>();
     public GameObject player_checker = null;
     public GameObject enemy_checker = null;
-    public static float checker_y_pos = 0.15f;
+    public float checker_y_pos = 0.15f;
 
     public Material original_checker_material = null;
     public Material flashing_checker_material = null;
 
+    public static BoardController singleton;
     private Camera main_camera = null;
     private bool checker_selected;
     private checker selected_checker;
@@ -104,6 +131,7 @@ public class BoardController : MonoBehaviour
     private void
     Awake()
     {
+        singleton = this;
         main_camera = Camera.main;
 
         float cell_size = GetComponent<Collider>().bounds.size.x / 8.0f;
@@ -130,23 +158,17 @@ public class BoardController : MonoBehaviour
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
                 cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size * j;
 
-                float x_off = cell_size * j, y_off = cell_size * i;
-                cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
-                cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
-                cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
-                cell_infos[idx].br.y = bottom_left_board_coord.z + y_off;
-                cell_infos[idx].tl.x = bottom_left_board_coord.x + x_off;
-                cell_infos[idx].tl.y = bottom_left_board_coord.z + cell_size + y_off;
-                cell_infos[idx].tr.x = bottom_left_board_coord.x + cell_size + x_off;
-                cell_infos[idx].tr.y = bottom_left_board_coord.z + cell_size + y_off;
-
                 /* instantiate checkers */
-                if (!is_even(i + j) && (i != 3 && i != 4))
+                if (!is_even(i + j))
                 {
-                    checker c = new checker(i < 3 ? player_checker : enemy_checker, idx, checkers.Count);
-                    checkers.Add(c);
+                    cell_infos[idx].is_black = true;
+                    if (i != 3 && i != 4)
+                    {
+                        checker c = new checker(i < 3 ? player_checker : enemy_checker, idx, checkers.Count);
+                        checkers.Add(c);
 
-                    cell_infos[idx].populated = true;
+                        cell_infos[idx].populated = true;
+                    }
                 }
             }
         }
@@ -166,16 +188,16 @@ public class BoardController : MonoBehaviour
     private void
     Update()
     {
+        //movement
         Ray mouse_ray = main_camera.ScreenPointToRay(Input.mousePosition);
 
         if (Input.GetMouseButtonDown(0))
         {
             if (Physics.Raycast(mouse_ray, out RaycastHit hit))
             {
-                if (hit.transform.gameObject.tag == "PlayerChecker")
+
+                if (hit.transform.gameObject.tag == "PlayerChecker" || hit.transform.gameObject.tag == "EnemyChecker")
                     checker_selected = true;
-                else
-                    checker_selected = false;
 
                 if (checker_selected)
                 {
@@ -196,23 +218,34 @@ public class BoardController : MonoBehaviour
                             }
                         }
                     }
-                    else if (hit.transform.gameObject.tag == "EnemyChecker" && selected_checker != null)
+                    else if (selected_checker != null)
                     {
-                        selected_checker = null;
-                        selected_checker.move(hit.transform.position);
-                        foreach (var c in checkers)
-                        {
-                            if (c.obj == hit.transform.gameObject)
-                            {
-                                c.kill();
-                                break;
-                            }
-                        }
                     }
                 }
             }
-
-            flashing_checker_material.SetFloat("_Metallic", (float)Math.Sin(Time.unscaledTime * 7.5f) * 0.35f);
         }
+        flashing_checker_material.SetFloat("_Metallic", (float)Math.Sin(Time.unscaledTime * 7.5f) * 0.35f);
     }
+
+
+    public Vector3 find_hitpoint(Vector3 hit)
+    {
+        Vector3 min = Vector3.zero;
+        print(hit);
+
+        float min_dist = 1000000f;
+
+        for (int i = 0; i < 64; i++)
+        {
+            float dist = Vector3.Distance(hit, cell_infos[i].pos);
+            if (dist < min_dist)
+            {
+                min = cell_infos[i].pos;
+                min_dist = dist;
+            }
+        }
+
+        return min;
+    }
+
 }
