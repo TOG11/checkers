@@ -15,6 +15,7 @@ public class NetManager : NetworkManager
 
     public override void Start()
     {
+        Application.targetFrameRate = 60;
         checkerSpawner.board = board;
         base.Start();
     }

@@ -11,7 +11,7 @@ public class CheckerSpawner : NetworkBehaviour
     public static CheckerSpawner singleton;
     public float checker_y_pos = 0.15f;
     public Material flashingCheckerMaterial;
-    public Material originalCheckerMaterial;
+    public Material client_flashingCheckerMaterial;
     public GameObject board;
 
     public static bool
@@ -29,6 +29,7 @@ public class CheckerSpawner : NetworkBehaviour
     private void Update()
     {
         flashingCheckerMaterial.SetFloat("_Metallic", (float)Mathf.Sin(Time.unscaledTime * 7.5f) * 0.35f);
+        client_flashingCheckerMaterial.SetFloat("_Metallic", (float)Mathf.Sin(Time.unscaledTime * 7.5f) * 0.35f);
     }
 
     /* instantiate checkers and initialize cell_infos array  */

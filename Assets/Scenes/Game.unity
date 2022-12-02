@@ -224,7 +224,7 @@ MonoBehaviour:
   syncInterval: 0.1
   checker_y_pos: 0.15
   flashingCheckerMaterial: {fileID: 2100000, guid: f1abcf6aa7660324b8ad5254886708dc, type: 2}
-  originalCheckerMaterial: {fileID: 2100000, guid: 95475d3f0a7c7e04bb008d021efa5743, type: 2}
+  client_flashingCheckerMaterial: {fileID: 2100000, guid: fc3a429c475c103479dea8756ca1d9f5, type: 2}
   board: {fileID: 0}
   player_checker: {fileID: 4158485514546212741, guid: 0ffc7c0e31ec771479056b332112e6f3, type: 3}
   enemy_checker: {fileID: 3966760514559917159, guid: fd9811bf51f9bf34b959990b7cd1869d, type: 3}
