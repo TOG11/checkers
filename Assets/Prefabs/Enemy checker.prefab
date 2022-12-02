@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 73886928577497693}
   - component: {fileID: -2169807585891024721}
   - component: {fileID: -714376151206522989}
+  - component: {fileID: 5715949139015993165}
   m_Layer: 0
   m_Name: Enemy checker
   m_TagString: EnemyChecker
@@ -133,7 +134,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   target: {fileID: 1168964165718156778}
-  clientAuthority: 1
+  clientAuthority: 0
   onlySyncOnChange: 1
   bufferResetMultiplier: 5
   positionSensitivity: 0.01
@@ -141,7 +142,25 @@ MonoBehaviour:
   scaleSensitivity: 0.01
   syncPosition: 1
   syncRotation: 1
-  syncScale: 0
+  syncScale: 1
   showGizmos: 0
   showOverlay: 0
   overlayColor: {r: 0, g: 0, b: 0, a: 0.5}
+--- !u!114 &5715949139015993165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3966760514559917159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfce7266e0bf23d408c453b6d2123ca1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0.1
+  flashingCheckerMaterial: {fileID: 2100000, guid: fc3a429c475c103479dea8756ca1d9f5, type: 2}
+  originalCheckerMaterial: {fileID: 2100000, guid: e9e2b3664bf3f2f4f8832392b9cbab58, type: 2}
+  isEnemy: 1

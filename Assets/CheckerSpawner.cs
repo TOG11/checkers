@@ -1,16 +1,17 @@
+/* Copyright (C) 2022 Aiden Desjarlais
+ * Copyright (C) 2022 Keir Yurkiw */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Mirror;
 
-public class CheckerSpawner : MonoBehaviour
+public class CheckerSpawner : NetworkBehaviour
 {
     public static CheckerSpawner singleton;
-    private Camera main_camera = null;
     public float checker_y_pos = 0.15f;
-    public Material original_checker_material = null;
-    public Material flashing_checker_material = null;
-    private bool checker_selected;
-    private checker selected_checker;
+    public Material flashingCheckerMaterial;
+    public Material originalCheckerMaterial;
     public GameObject board;
 
     public static bool
@@ -19,63 +20,21 @@ public class CheckerSpawner : MonoBehaviour
         return i % 2 == 0;
     }
 
-    public bool spawn;
-    private void
-Update()
-    {
-
-        if (spawn) { SpawnCheckers(); spawn = false; }
-        //movement
-        Ray mouse_ray = main_camera.ScreenPointToRay(Input.mousePosition);
-
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (Physics.Raycast(mouse_ray, out RaycastHit hit))
-            {
-
-                if (hit.transform.gameObject.tag == "PlayerChecker" || hit.transform.gameObject.tag == "EnemyChecker")
-                    checker_selected = true;
-
-                if (checker_selected)
-                {
-                    foreach (var c in BoardController.signleton.checkers)
-                        if (c.obj.gameObject.tag == "PlayerChecker")
-                            c.obj.GetComponent<MeshRenderer>().material = original_checker_material;
-
-
-                    if (hit.transform.gameObject.tag == "PlayerChecker")
-                    {
-                        hit.transform.gameObject.GetComponent<MeshRenderer>().material = flashing_checker_material;
-                        foreach (var c in BoardController.signleton.checkers)
-                        {
-                            if (c.obj == hit.transform.gameObject)
-                            {
-                                selected_checker = c;
-                                break;
-                            }
-                        }
-                    }
-                    else if (selected_checker != null)
-                    {
-                    }
-                }
-            }
-        }
-        flashing_checker_material.SetFloat("_Metallic", (float)Mathf.Sin(Time.unscaledTime * 7.5f) * 0.35f);
-    }
 
     private void Awake()
     {
-        SpawnCheckers();
+        singleton = this;
+    }
+
+    private void Update()
+    {
+        flashingCheckerMaterial.SetFloat("_Metallic", (float)Mathf.Sin(Time.unscaledTime * 7.5f) * 0.35f);
     }
 
     /* instantiate checkers and initialize cell_infos array  */
-    private void
-    SpawnCheckers()
+    public void
+    SpawnCheckers(NetworkConnectionToClient conn)
     {
-        singleton = this;
-        main_camera = Camera.main;
-
         float cell_size = board.GetComponent<Collider>().bounds.size.x / 8.0f;
 
         Vector3 bottom_left_cell_pos = new Vector3(
@@ -106,20 +65,22 @@ Update()
                     cell_infos[idx].is_black = true;
                     if (i != 3 && i != 4)
                     {
-                        checker c;
+                        CheckerData c;
+
                         if (i < 3)
-                            c = new checker(player_checker, idx, BoardController.signleton.checkers.Count, 0);
+                            c = new CheckerData().CreateChecker(player_checker, idx, BoardController.singleton.checkers.Count, 0, conn);
                         else
-                            c = new checker(enemy_checker, idx, BoardController.signleton.checkers.Count, 1);
+                            c = new CheckerData().CreateChecker(enemy_checker, idx, BoardController.singleton.checkers.Count, 1, conn);
 
-                        BoardController.signleton.checkers.Add(c);
-
+                        BoardController.singleton.checkers.Add(c);
                         cell_infos[idx].populated = true;
                     }
                 }
             }
         }
     }
+
+
     public struct cell_info
     {
         /* center position of each cell  */
@@ -153,111 +114,4 @@ Update()
 
         return min;
     }
-
-    private checker
-get_checker(int x, int y)
-    {
-        var idx = (x == 0 || y == 0) ? x * 8 + y : x + y * 8;
-        for (var i = 0; i < BoardController.signleton.checkers.Count; i++)
-            if (BoardController.signleton.checkers[i].pos_index == idx)
-                return BoardController.signleton.checkers[i];
-
-        return null;
-    }
-
-}
-
-public class checker
-{
-    public GameObject obj = null;
-    public int list_index = -1, pos_index = -1;
-    private bool is_king = false;
-    public int type;
-
-
-    public
-    checker(GameObject prefab, int in_index, int in_list_index, int in_type)
-    {
-        type = in_type;
-        obj = MonoBehaviour.Instantiate(prefab, CheckerSpawner.singleton.cell_infos[in_index].pos, Quaternion.identity);
-        pos_index = in_index;
-        list_index = in_list_index;
-    }
-
-    public bool
-    check_move_validity(Vector3 hit)
-    {
-        Vector3 square_left = CheckerSpawner.singleton.cell_infos[pos_index + 8 - 1].pos;
-        Vector3 square_right = CheckerSpawner.singleton.cell_infos[pos_index + 8 + 1].pos;
-
-        if (hit == square_left)
-        {
-            obj.transform.position = square_left;
-        }
-        else if (hit == square_right)
-        {
-            obj.transform.position = square_right;
-        }
-        else
-            return false;
-
-        return true;
-    }
-
-
-
-    public bool
-    move(int idx)
-    {
-        if (CheckerSpawner.singleton.cell_infos[idx].populated || !CheckerSpawner.singleton.cell_infos[idx].is_black)
-        {
-            foreach (var c in BoardController.signleton.checkers)
-                if (c.obj.gameObject.tag == "PlayerChecker")
-                    c.obj.GetComponent<MeshRenderer>().material = CheckerSpawner.singleton.original_checker_material;
-
-            return false;
-        }
-
-        CheckerSpawner.singleton.cell_infos[idx].populated = true;
-
-        CheckerSpawner.singleton.cell_infos[pos_index].populated = false;
-        pos_index = idx;
-
-        return true;
-    }
-
-    public bool
-    move(int x, int y)
-    {
-        var idx = (x == 0 || y == 0) ? x * 8 + y : x + y * 8;
-        return move(idx);
-    }
-
-    public bool
-    move(Vector3 vec)
-    {
-        Vector3 vec3 = new Vector3(vec.x, CheckerSpawner.singleton.checker_y_pos, vec.z);
-        for (int i = 0; i < 64; i++)
-        {
-            if (vec3 == CheckerSpawner.singleton.cell_infos[i].pos)
-            {
-                return move(i);
-            }
-        }
-        return false;
-    }
-
-    public void
-    kill()
-    {
-        MonoBehaviour.Destroy(obj);
-
-        CheckerSpawner.singleton.cell_infos[pos_index].populated = false;
-        BoardController.signleton.checkers.RemoveAt(list_index);
-
-        /* update list index for other checkers  */
-        for (var i = list_index; i < BoardController.signleton.checkers.Count; i++)
-            BoardController.signleton.checkers[i].list_index = i;
-    }
-
 }

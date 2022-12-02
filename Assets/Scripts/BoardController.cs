@@ -8,12 +8,15 @@ using Mirror;
 
 public class BoardController : NetworkBehaviour
 {
-    public List<checker> checkers = new List<checker>();
-    public static BoardController signleton;
+    [SyncVar]
+    public GameObject SelectedChecker = null;
+
+    public readonly SyncList<CheckerData> checkers = new SyncList<CheckerData>();
+    public static BoardController singleton;
 
     private void Awake()
     {
-        signleton = this;
+        singleton = this;
     }
 
 
