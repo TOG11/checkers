@@ -23,8 +23,13 @@ public class NetManager : NetworkManager
     public override void OnServerConnect(NetworkConnectionToClient conn)
     {
         print("Conenction " + conn.connectionId + " has connected");
-        if (conn.connectionId != 0)
+        if (conn.connectionId != 0) //all players loaded in, spawn checkers (0 = host)
+        {
             StartCoroutine(SpawnCheckers(conn));
+        } else
+        {// host connected
+
+        }
 
         base.OnServerConnect(conn);
     }
@@ -36,25 +41,54 @@ public class NetManager : NetworkManager
         checkerSpawner.SpawnCheckers(conn);
     }
 
+    private IEnumerator SetCameras(Camera h, Camera c)
+    {
+        yield return new WaitForSeconds(0.200f);
+        checkerSpawner.SetCameras(h, c);
+    }
+
     public override void OnClientConnect()
     {
         NetworkClient.Ready();
         NetworkClient.AddPlayer();
     }
 
+    public Camera host_cam;
+    public Camera client_cam;
+
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
-        GameObject client = new GameObject();
-        client.name = "ClientPlayer " + conn.connectionId;
-        client.AddComponent<NetworkIdentity>();
-        GameObject client_camera = new GameObject();
-        client_camera.name = "ClientCamera";
-        client_camera.AddComponent<Camera>();
-        client_camera.transform.SetParent(client.transform);
+        if (conn.connectionId == 0)//host connected
+        {
+            GameObject host = new GameObject();
+            host.name = "HostPlayer " + conn.connectionId;
+            host.AddComponent<NetworkIdentity>();
+            GameObject host_camera = new GameObject();
+            host_camera.name = "HostCamera";
+            host_camera.AddComponent<Camera>();
+            host_camera.transform.SetParent(host.transform);
+            host_camera.transform.position = new Vector3(0, 7.71f, -8.44f);
+            host_cam = host_camera.GetComponent<Camera>();
+            NetworkServer.AddPlayerForConnection(conn, host);
+        }
+        else 
+        { //client connected
 
-        client_camera.SetActive(false);
+            Camera.main.enabled = false;
 
-        NetworkServer.AddPlayerForConnection(conn, client);
+            GameObject client = new GameObject();
+            client.name = "ClientPlayer " + conn.connectionId;
+            client.AddComponent<NetworkIdentity>();
+            GameObject client_camera = new GameObject();
+            client_camera.name = "ClientCamera";
+            client_camera.AddComponent<Camera>();
+            client_camera.transform.SetParent(client.transform);
+            client_camera.transform.eulerAngles = new Vector3(45.056f, 180, 0);
+            client_camera.transform.position = new Vector3(0, 7.71f, 8.44f);
+            client_cam = client_camera.GetComponent<Camera>();
+            NetworkServer.AddPlayerForConnection(conn, client);
+            StartCoroutine(SetCameras(host_cam, client_cam));
+        }
     }
 
 

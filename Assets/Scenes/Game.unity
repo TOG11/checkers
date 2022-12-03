@@ -157,6 +157,8 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   SelectedChecker: {fileID: 0}
+  client_cam: {fileID: 0}
+  host_cam: {fileID: 0}
 --- !u!114 &74745406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -615,7 +617,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1907949045}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: -10}
+  m_LocalPosition: {x: 0, y: 7.71, z: 8.44}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

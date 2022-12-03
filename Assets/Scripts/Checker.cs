@@ -1,3 +1,6 @@
+/* Copyright (C) 2022 Aiden Desjarlais
+ * Copyright (C) 2022 Keir Yurkiw */
+
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -78,7 +81,6 @@ public class CheckerData
         utils = new CheckerUtilitys { checker = obj.GetComponent<Checker>() };
         obj.GetComponent<Checker>().utils = utils;
         obj.GetComponent<Checker>().data = this;
-
         if (type == 1)
         {
             NetworkServer.Spawn(obj, conn);
@@ -107,29 +109,34 @@ public class Checker : NetworkBehaviour
 
     private void Update()
     {
-        if (data == null || utils == null)
+        if (data == null || utils == null || Camera.main == null)
             return;
 
         //checker selection
         Ray mouse_ray = Camera.main.ScreenPointToRay(Input.mousePosition);
 
-        if (Input.GetMouseButtonDown(0) && NetworkClient.connection != null)
+        if (Input.GetMouseButtonDown(0) && !isClientOnly)//HOST SELECTION
         {
             if (Physics.Raycast(mouse_ray, out RaycastHit hit) && !data.selected)
             {
 
-                if (hit.transform.gameObject == gameObject)
+                if (hit.transform.gameObject == gameObject && !hit.transform.gameObject.CompareTag("EnemyChecker"))
                 { // clicked this checker
+                    HostSelected(true);
                     GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
                     return;
                 }
                 else
                 {
+                    HostSelected(false);
                     GetComponent<MeshRenderer>().material = originalCheckerMaterial;
 
                     foreach (var i in BoardController.singleton.checkers)
                         if (i.obj.CompareTag("PlayerChecker") && i.obj == gameObject)
+                        {
                             i.obj.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+                            i.obj.GetComponent<Checker>().HostSelected(false);
+                        }
                 }
             }
          else if (Physics.Raycast(mouse_ray, out RaycastHit _hit))
@@ -137,33 +144,44 @@ public class Checker : NetworkBehaviour
 
                 if (!_hit.transform.gameObject.CompareTag("PlayerChecker"))
                     return;
+                HostSelected(false);
                 GetComponent<MeshRenderer>().material = originalCheckerMaterial;
             }
             else
             { //clicked something thats not a checker
+                HostSelected(false);
                 GetComponent<MeshRenderer>().material = originalCheckerMaterial;
 
                 foreach (var i in BoardController.singleton.checkers)
                     if (i.obj.CompareTag("PlayerChecker") && i.obj == gameObject)
+                    {
                         i.obj.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+                        i.obj.GetComponent<Checker>().HostSelected(false);
+                    }
             }
         }
-        else if (Input.GetMouseButtonDown(0))
+        else if (Input.GetMouseButtonDown(0) && isClientOnly) //CLIENT SELECTION
         {
+            
             if (Physics.Raycast(mouse_ray, out RaycastHit hit) && !data.selected)
             { 
-                if (hit.transform.gameObject == gameObject)
+                if (hit.transform.gameObject == gameObject && hit.transform.gameObject.CompareTag("EnemyChecker"))
                 { // clicked this checker
+                    ClientSelected(true);
                     GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
                     return;
                 }
                 else
                 {
+                    ClientSelected(false);
                     GetComponent<MeshRenderer>().material = originalCheckerMaterial;
 
                     foreach (var i in BoardController.singleton.checkers)
                         if (i.obj.CompareTag("EnemyChecker") && i.obj == gameObject)
+                        {
                             i.obj.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+                            i.obj.GetComponent<Checker>().ClientSelected(false);
+                        }
                 }
             }
             else if (Physics.Raycast(mouse_ray, out RaycastHit _hit))
@@ -171,19 +189,44 @@ public class Checker : NetworkBehaviour
 
                 if (!_hit.transform.gameObject.CompareTag("EnemyChecker"))
                     return;
+                ClientSelected(false);
                 GetComponent<MeshRenderer>().material = originalCheckerMaterial;
             }
             else
             { //clicked something thats not a checker
+                ClientSelected(false);
                 GetComponent<MeshRenderer>().material = originalCheckerMaterial;
 
                 foreach (var i in BoardController.singleton.checkers)
                     if (i.obj.CompareTag("EnemyChecker") && i.obj == gameObject)
+                    {
                         i.obj.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+                        i.obj.GetComponent<Checker>().ClientSelected(false);
+                    }
             }
         }
 
     }
+
+
+    [Command(requiresAuthority = false)]
+    public void ClientSelected(bool select)
+    {
+        if (select)
+            gameObject.GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
+        else
+            gameObject.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+    }
+
+    [ClientRpc]
+    public void HostSelected(bool select)
+    {
+        if (select)
+            gameObject.GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
+        else
+            gameObject.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+    }
+
 
     [Command(requiresAuthority = false)]
     public void SpawnWithAuthority(GameObject c, NetworkConnectionToClient sender = null)
@@ -195,13 +238,6 @@ public class Checker : NetworkBehaviour
     public void Spawn(GameObject c)
     {
         NetworkServer.Spawn(c);
-    }
-
-    [ClientRpc]
-    public void AddUtilsAndData(CheckerData c, CheckerUtilitys util)
-    {
-        utils = util;
-        data = c;
     }
 
     [Command(requiresAuthority = false)]

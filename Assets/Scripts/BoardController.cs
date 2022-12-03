@@ -11,12 +11,21 @@ public class BoardController : NetworkBehaviour
     [SyncVar]
     public GameObject SelectedChecker = null;
 
+
     public readonly SyncList<CheckerData> checkers = new SyncList<CheckerData>();
     public static BoardController singleton;
+
+    public GameObject localCamera;
 
     private void Awake()
     {
         singleton = this;
+    }
+
+    private void Start()
+    {
+        if (isClientOnly)
+            Camera.main.enabled = false;
     }
 
 
