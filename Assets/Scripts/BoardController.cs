@@ -9,29 +9,23 @@ using Mirror;
 public class BoardController : NetworkBehaviour
 {
     [SyncVar]
-    public GameObject SelectedChecker = null;
-
+    public Checker SelectedChecker;
 
     public readonly SyncList<CheckerData> checkers = new SyncList<CheckerData>();
     public static BoardController singleton;
-
-    public GameObject localCamera;
 
     private void Awake()
     {
         singleton = this;
     }
 
-    private void Start()
+    public CheckerData GetSelectedChecker()
     {
-        if (isClientOnly)
-            Camera.main.enabled = false;
+        foreach (var c in checkers)
+        {
+            if (c.selected)
+                return c;
+        }
+        return null;
     }
-
-
-
-
-
-
-
 }

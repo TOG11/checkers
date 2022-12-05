@@ -12,6 +12,8 @@ public class NetManager : NetworkManager
     public GameObject board;
     public BoardController boardControl;
     public CheckerSpawner checkerSpawner;
+    public GameObject clientPrefab;
+    public GameObject hostPrefab;
 
     public override void Start()
     {
@@ -41,11 +43,6 @@ public class NetManager : NetworkManager
         checkerSpawner.SpawnCheckers(conn);
     }
 
-    private IEnumerator SetCameras(Camera h, Camera c)
-    {
-        yield return new WaitForSeconds(0.200f);
-        checkerSpawner.SetCameras(h, c);
-    }
 
     public override void OnClientConnect()
     {
@@ -53,42 +50,24 @@ public class NetManager : NetworkManager
         NetworkClient.AddPlayer();
     }
 
-    public Camera host_cam;
-    public Camera client_cam;
+    public static Camera host;
 
     public override void OnServerAddPlayer(NetworkConnectionToClient conn)
     {
         if (conn.connectionId == 0)//host connected
         {
-            GameObject host = new GameObject();
-            host.name = "HostPlayer " + conn.connectionId;
-            host.AddComponent<NetworkIdentity>();
-            GameObject host_camera = new GameObject();
-            host_camera.name = "HostCamera";
-            host_camera.AddComponent<Camera>();
-            host_camera.transform.SetParent(host.transform);
-            host_camera.transform.position = new Vector3(0, 7.71f, -8.44f);
-            host_cam = host_camera.GetComponent<Camera>();
-            NetworkServer.AddPlayerForConnection(conn, host);
+            Destroy(Camera.main.gameObject);
+            var hostc = Instantiate(hostPrefab);
+            host = hostc.GetComponentInChildren<Camera>();
+            host.enabled = true;
+            NetworkServer.AddPlayerForConnection(conn, hostc);
         }
         else 
         { //client connected
-
-            Camera.main.enabled = false;
-
-            GameObject client = new GameObject();
-            client.name = "ClientPlayer " + conn.connectionId;
-            client.AddComponent<NetworkIdentity>();
-            GameObject client_camera = new GameObject();
-            client_camera.name = "ClientCamera";
-            client_camera.AddComponent<Camera>();
-            client_camera.transform.SetParent(client.transform);
-            client_camera.transform.eulerAngles = new Vector3(45.056f, 180, 0);
-            client_camera.transform.position = new Vector3(0, 7.71f, 8.44f);
-            client_cam = client_camera.GetComponent<Camera>();
-            NetworkServer.AddPlayerForConnection(conn, client);
-            StartCoroutine(SetCameras(host_cam, client_cam));
+            var clientc = Instantiate(clientPrefab);
+            NetworkServer.AddPlayerForConnection(conn, clientc);
         }
+
     }
 
 

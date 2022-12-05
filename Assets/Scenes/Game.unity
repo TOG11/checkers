@@ -157,8 +157,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0.1
   SelectedChecker: {fileID: 0}
-  client_cam: {fileID: 0}
-  host_cam: {fileID: 0}
+  localCamera: {fileID: 0}
 --- !u!114 &74745406
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -425,6 +424,46 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 50, y: -30, z: 0}
+--- !u!1 &1177652105
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1177652107}
+  - component: {fileID: 1177652106}
+  m_Layer: 0
+  m_Name: AudioListener
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!81 &1177652106
+AudioListener:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1177652105}
+  m_Enabled: 1
+--- !u!4 &1177652107
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1177652105}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 14.474905, y: 2.5429726, z: 8.635238}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 6
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1513579375 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 2244215366737246844, guid: 2aea27f6211825649acab75454da03b1, type: 3}
@@ -521,10 +560,15 @@ MonoBehaviour:
   spawnPrefabs:
   - {fileID: 3966760514559917159, guid: fd9811bf51f9bf34b959990b7cd1869d, type: 3}
   - {fileID: 4158485514546212741, guid: 0ffc7c0e31ec771479056b332112e6f3, type: 3}
+  - {fileID: 7379039185746821417, guid: 40c95b415770aa148b55985df2c97132, type: 3}
+  - {fileID: 4065710556996243398, guid: 03b5a14a96f96a240a9227362d970c05, type: 3}
   timeInterpolationGui: 0
   board: {fileID: 1513579375}
   boardControl: {fileID: 74745405}
   checkerSpawner: {fileID: 490675133}
+  clientPrefab: {fileID: 4065710556996243398, guid: 03b5a14a96f96a240a9227362d970c05, type: 3}
+  hostPrefab: {fileID: 7379039185746821417, guid: 40c95b415770aa148b55985df2c97132, type: 3}
+  host: {fileID: 0}
 --- !u!4 &1540359576
 Transform:
   m_ObjectHideFlags: 0
@@ -550,7 +594,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1907949048}
   - component: {fileID: 1907949047}
-  - component: {fileID: 1907949046}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -558,14 +601,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!81 &1907949046
-AudioListener:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1907949045}
-  m_Enabled: 1
 --- !u!20 &1907949047
 Camera:
   m_ObjectHideFlags: 0

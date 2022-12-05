@@ -97,6 +97,7 @@ public class CheckerData
 //base checker control class
 public class Checker : NetworkBehaviour
 {
+
     public Material flashingCheckerMaterial;
     public Material originalCheckerMaterial;
 
@@ -109,19 +110,24 @@ public class Checker : NetworkBehaviour
 
     private void Update()
     {
-        if (data == null || utils == null || Camera.main == null)
+        if (data == null || utils == null || Player.localCamera == null)
             return;
 
-        //checker selection
-        Ray mouse_ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        Ray mouse_ray;
 
-        if (Input.GetMouseButtonDown(0) && !isClientOnly)//HOST SELECTION
+        //checker selection
+        if (NetManager.host != null)
+            mouse_ray = NetManager.host.ScreenPointToRay(Input.mousePosition);
+        else
+            mouse_ray = Player.localCamera.ScreenPointToRay(Input.mousePosition);
+
+        if (Input.GetMouseButtonDown(0) && isServer)//HOST SELECTION
         {
             if (Physics.Raycast(mouse_ray, out RaycastHit hit) && !data.selected)
             {
-
                 if (hit.transform.gameObject == gameObject && !hit.transform.gameObject.CompareTag("EnemyChecker"))
                 { // clicked this checker
+                    
                     HostSelected(true);
                     GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
                     return;
@@ -160,9 +166,9 @@ public class Checker : NetworkBehaviour
                     }
             }
         }
-        else if (Input.GetMouseButtonDown(0) && isClientOnly) //CLIENT SELECTION
+        else if (Input.GetMouseButtonDown(0) && !isServer) //CLIENT SELECTION
         {
-            
+            print("client");
             if (Physics.Raycast(mouse_ray, out RaycastHit hit) && !data.selected)
             { 
                 if (hit.transform.gameObject == gameObject && hit.transform.gameObject.CompareTag("EnemyChecker"))
@@ -213,13 +219,35 @@ public class Checker : NetworkBehaviour
     public void ClientSelected(bool select)
     {
         if (select)
+        {
+            data.selected = true;
             gameObject.GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
+        }
         else
+        {
+            data.selected = false;
             gameObject.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+        }
+    }
+
+    internal void HostSelected(bool select)
+    {
+        if (select)
+        {
+            data.selected = true;
+            gameObject.GetComponent<MeshRenderer>().material = flashingCheckerMaterial;
+            HostSelect(true);
+        }
+        else
+        {
+            data.selected = false;
+            gameObject.GetComponent<MeshRenderer>().material = originalCheckerMaterial;
+            HostSelect(false);
+        }
     }
 
     [ClientRpc]
-    public void HostSelected(bool select)
+    public void HostSelect(bool select)
     {
         if (select)
             gameObject.GetComponent<MeshRenderer>().material = flashingCheckerMaterial;

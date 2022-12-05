@@ -81,24 +81,6 @@ public class CheckerSpawner : NetworkBehaviour
         }
     }
 
-    public void SetCameras(Camera h, Camera c)
-    {
-        RpcSetClientCamera(c.gameObject);
-
-        h.gameObject.tag = "MainCamera";
-        h.gameObject.SetActive(true);
-        BoardController.singleton.localCamera = h.gameObject;
-    }
-
-    [ClientRpc]
-    public void RpcSetClientCamera(GameObject c)
-    {
-        c.tag = "MainCamera";
-        c.SetActive(true);
-        BoardController.singleton.localCamera = c;
-    }
-
-
     public struct cell_info
     {
         /* center position of each cell  */
