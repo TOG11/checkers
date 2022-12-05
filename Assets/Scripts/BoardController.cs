@@ -8,9 +8,6 @@ using Mirror;
 
 public class BoardController : NetworkBehaviour
 {
-    [SyncVar]
-    public Checker SelectedChecker;
-
     public readonly SyncList<CheckerData> checkers = new SyncList<CheckerData>();
     public static BoardController singleton;
 
