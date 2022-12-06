@@ -60,6 +60,17 @@ public class CheckerSpawner : NetworkBehaviour
                 cell_infos[idx].pos.y = bottom_left_cell_pos.y;
                 cell_infos[idx].pos.x = bottom_left_cell_pos.z + cell_size * j;
 
+
+                float x_off = cell_size * j, y_off = cell_size * i;
+                cell_infos[idx].bl.x = bottom_left_board_coord.x + x_off;
+                cell_infos[idx].bl.y = bottom_left_board_coord.z + y_off;
+                cell_infos[idx].br.x = bottom_left_board_coord.x + cell_size + x_off;
+                cell_infos[idx].br.y = bottom_left_board_coord.z + y_off;
+                cell_infos[idx].tl.x = bottom_left_board_coord.x + x_off;
+                cell_infos[idx].tl.y = bottom_left_board_coord.z + cell_size + y_off;
+                cell_infos[idx].tr.x = bottom_left_board_coord.x + cell_size + x_off;
+                cell_infos[idx].tr.y = bottom_left_board_coord.z + cell_size + y_off;
+
                 /* instantiate checkers */
                 if (!is_even(i + j))
                 {
@@ -86,6 +97,9 @@ public class CheckerSpawner : NetworkBehaviour
         /* center position of each cell  */
         public Vector3 pos;
         public bool is_black;
+
+        public Vector2 bl, br, tl, tr;
+
         /* there is a checker in the cell  */
         public bool populated;
     }

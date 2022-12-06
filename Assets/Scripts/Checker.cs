@@ -12,51 +12,62 @@ public class CheckerUtilitys
 {
     public Checker checker;
 
-    public bool CanMoveHere(Vector3 hit)
+
+    public bool
+    check_move_validity(Vector3 hit)
     {
-        Vector3 square_left = CheckerSpawner.singleton.cell_infos[checker.data.pos_index + 8 - 1].pos;
-        Vector3 square_right = CheckerSpawner.singleton.cell_infos[checker.data.pos_index + 8 + 1].pos;
+        Vector3 square_left = BoardController.singleton.cell_infos[pos_index + 8 - 1].pos;
+        Vector3 square_right = BoardController.singleton.cell_infos[pos_index + 8 + 1].pos;
 
         if (hit == square_left)
         {
-            checker.data.obj.transform.position = square_left;
+            obj.transform.position = square_left;
         }
         else if (hit == square_right)
         {
-            checker.data.obj.transform.position = square_right;
+            obj.transform.position = square_right;
         }
         else
             return false;
 
         return true;
     }
-    private bool Move(int idx)
+
+
+    public bool
+    move(int idx)
     {
-        if (CheckerSpawner.singleton.cell_infos[idx].populated || !CheckerSpawner.singleton.cell_infos[idx].is_black)
+        if (BoardController.singleton.cell_infos[idx].populated || !BoardController.singleton.cell_infos[idx].is_black)
         {
             foreach (var c in BoardController.singleton.checkers)
-                if (c.obj.gameObject.CompareTag("PlayerChecker"))
-                    c.obj.GetComponent<MeshRenderer>().material = checker.originalCheckerMaterial;
+                if (c.obj.gameObject.tag == "PlayerChecker")
+                    c.obj.GetComponent<MeshRenderer>().material = BoardController.singleton.original_checker_material;
 
             return false;
         }
 
         CheckerSpawner.singleton.cell_infos[idx].populated = true;
 
-        CheckerSpawner.singleton.cell_infos[checker.data.pos_index].populated = false;
-        checker.data.pos_index = idx;
+        CheckerSpawner.singleton.cell_infos[pos_index].populated = false;
+        pos_index = idx;
 
         return true;
     }
-
-    public bool MoveTo(Vector3 vec)
+    public bool
+    move(int x, int y)
     {
-        Vector3 vec3 = new Vector3(vec.x, CheckerSpawner.singleton.checker_y_pos, vec.z);
+        var idx = (x == 0 || y == 0) ? x * 8 + y : x + y * 8;
+        return move(idx);
+    }
+    public bool
+    move(Vector3 vec)
+    {
+        Vector3 vec3 = new Vector3(vec.x, BoardController.singleton.checker_y_pos, vec.z);
         for (int i = 0; i < 64; i++)
         {
-            if (vec3 == CheckerSpawner.singleton.cell_infos[i].pos)
+            if (vec3 == BoardController.singleton.cell_infos[i].pos)
             {
-                return Move(i);
+                return move(i);
             }
         }
         return false;
@@ -120,6 +131,50 @@ public class Checker : NetworkBehaviour
             mouse_ray = NetManager.host.ScreenPointToRay(Input.mousePosition);
         else
             mouse_ray = Player.localCamera.ScreenPointToRay(Input.mousePosition);
+
+
+        //movement
+
+        if (Input.GetMouseButtonDown(0) && data.selected)
+        {
+            if (BoardController.singleton.GetSelectedChecker() != null && Physics.Raycast(mouse_ray, out RaycastHit hit))
+            {
+               // print("working");
+                CheckerData checker = BoardController.singleton.GetSelectedChecker();
+                checker.utils.MoveHere(checker.utils.find_hitpoint(hit.point), out Vector3 square);
+
+                if (isServer)
+                {
+                    if (square != Vector3.negativeInfinity)
+                    {
+                        checker.utils.MoveTo(square);
+                        //print("HOST: moving to " + square);
+                    }
+                    else
+                    {
+                        //print($"HOST: cant move to {square}");
+                    }
+                }
+                else
+                {
+                    if (square != Vector3.negativeInfinity)
+                    {
+                        checker.utils.MoveTo(square);
+                        //print("CLIENT: moving to "+ square);
+                    }
+                    else
+                    {
+                        //print($"CLIENT: cant move to {square}");
+                    }
+                }
+            }
+        }
+
+
+
+
+
+        //selection
 
         if (Input.GetMouseButtonDown(0) && isServer)//HOST SELECTION
         {
@@ -211,7 +266,6 @@ public class Checker : NetworkBehaviour
                     }
             }
         }
-
     }
 
 
