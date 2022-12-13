@@ -9,15 +9,30 @@ using Mirror;
 public class Player : NetworkBehaviour
 {
     public static Camera localCamera;
+    public PlayerData data = new();
+    public static Player instance;
 
     public void Start()
     {
+        instance = this;
+
         if (Camera.main != null)
             Destroy(Camera.main.gameObject);
         localCamera = GetComponentInChildren<Camera>();
-        print(isServer);
         if (!isServer)
+        {
             localCamera.enabled = true;
+            data.client = true;
+            data.hasTurn = true;
+        }
     }
+
+}
+
+public class PlayerData
+{
+    public bool client = false;
+    public bool hasTurn = false;
+
 
 }

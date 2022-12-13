@@ -90,6 +90,9 @@ public class CheckerSpawner : NetworkBehaviour
                 }
             }
         }
+
+        foreach (var c in cell_infos)
+            _cell_Infos.Add(c);
     }
 
     public struct cell_info
@@ -107,7 +110,10 @@ public class CheckerSpawner : NetworkBehaviour
     public GameObject player_checker = null;
     public GameObject enemy_checker = null;
 
+
     public cell_info[] cell_infos = new cell_info[8 * 8];
+    public SyncList<cell_info> _cell_Infos = new();
+
 
     public Vector3 find_hitpoint(Vector3 hit)
     {

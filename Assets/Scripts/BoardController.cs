@@ -11,18 +11,46 @@ public class BoardController : NetworkBehaviour
     public readonly SyncList<CheckerData> checkers = new SyncList<CheckerData>();
     public static BoardController singleton;
 
+    [SyncVar]
+    public char WhosTurnIsIt = 'C';
+
+
     private void Awake()
     {
         singleton = this;
     }
 
-    public CheckerData GetSelectedChecker()
+
+    public char WhosTurn()
     {
-        foreach (var c in checkers)
-        {
-            if (c.selected)
-                return c;
-        }
-        return null;
+        return WhosTurnIsIt;
     }
+
+    public void SetTurn(char c)
+    {
+        SetTurnFromServer(c);
+    }
+
+    [Command]
+    public void SetTurnFromServer(char c)
+    {
+        if (c == 'C')
+        {
+            WhosTurnIsIt = 'C';
+        }
+        else if (c == 'H')
+        {
+            WhosTurnIsIt = 'H';
+        }
+    }
+
+
+    public bool HasTurn()
+    {
+        if (Player.instance.data.hasTurn)
+            return true;
+        else
+            return false;
+    }
+
 }
